@@ -1,0 +1,24 @@
+# Virtual environment
+venv/
+
+# Compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# macOS files
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Other
+.env
+*.bak
+*.swp
+*.swo
