@@ -23,8 +23,13 @@ else:
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
 user_id = sp.me()["id"]
-#https://open.spotify.com/playlist/417YNUWmPJcvGknVUQaW14?si=decc3064b6df4bab
-playlist_id = "417YNUWmPJcvGknVUQaW14"
+
+# Playlist ID or full URI from environment (e.g. SPOTIPY_PLAYLIST_ID or .env)
+_raw = os.environ.get("SPOTIPY_PLAYLIST_ID", "").strip() or "417YNUWmPJcvGknVUQaW14"
+if "open.spotify.com/playlist/" in _raw:
+    playlist_id = _raw.split("playlist/")[-1].split("?")[0]
+else:
+    playlist_id = _raw
 genres = ["latin urban", "urban", "trap", "reggaeton"]
 
 track_ids = []

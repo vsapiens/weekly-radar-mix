@@ -11,6 +11,7 @@ In your GitHub repo go to **Settings → Secrets and variables → Actions** and
 | `SPOTIPY_CLIENT_ID` | Your Spotify app Client ID |
 | `SPOTIPY_CLIENT_SECRET` | Your Spotify app Client Secret |
 | `SPOTIPY_REDIRECT_URI` | Redirect URI (e.g. `http://localhost:8080`) |
+| `SPOTIPY_PLAYLIST_ID` | Optional. Playlist ID or full Spotify playlist URI to update. If unset, script uses default. |
 | `SPOTIPY_CACHE` | Cached Spotify token so the job can run without a browser (see below) |
 
 ## One-time: create the Spotify auth cache
