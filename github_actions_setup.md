@@ -26,8 +26,15 @@ The script uses Spotify OAuth, which normally opens a browser. In CI there is no
 2. **Find the cache file**  
    Spotipy saves the token to a file named `.cache` (or `.cache-<username>`) in the project directory. If you don’t see it, check that the script ran and that your user has write access to the project folder.
 
-3. **Copy the cache into the secret**  
-   Open the cache file, copy its **entire contents** (JSON), and paste that as the value of the `SPOTIPY_CACHE` repository secret in GitHub.
+3. **Add the cache as the `SPOTIPY_CACHE` secret**  
+   **Option A (recommended):** Base64-encode the file so newlines and special characters are preserved. In the project directory:
+   ```bash
+   # Linux/macOS
+   base64 -w0 .cache
+   ```
+   Copy the output and paste it as the value of the `SPOTIPY_CACHE` repository secret.  
+   **Option B:** Open the `.cache` file, copy its **entire contents** (JSON), and paste that as the value of `SPOTIPY_CACHE`. If the workflow fails with auth errors, use Option A instead.  
+   **Windows (PowerShell):** To base64-encode: `[Convert]::ToBase64String([IO.File]::ReadAllBytes(".cache"))`
 
 4. **Optional: use a fixed cache path locally**  
    To force the cache file to be named `.cache` (so you always know which file to copy), you can run with:

@@ -25,8 +25,20 @@ jobs:
         env:
           SPOTIPY_CACHE: ${{ secrets.SPOTIPY_CACHE }}
         run: |
-          echo "$SPOTIPY_CACHE" > .cache
-        if: env.SPOTIPY_CACHE != ''
+          if [ -z "$SPOTIPY_CACHE" ]; then
+            echo "::error::SPOTIPY_CACHE secret is not set. Generate a token by running the script locally, then add the cache to GitHub Secrets. See github_actions_setup.md"
+            exit 1
+          fi
+          # Support base64-encoded cache (recommended) or raw JSON
+          if echo "$SPOTIPY_CACHE" | base64 -d > .cache 2>/dev/null && [ -s .cache ]; then
+            echo "Restored cache from base64"
+          else
+            printf '%s' "$SPOTIPY_CACHE" > .cache
+          fi
+          if [ ! -s .cache ]; then
+            echo "::error::SPOTIPY_CACHE is empty or invalid. See github_actions_setup.md"
+            exit 1
+          fi
 
       - name: Update playlist
         env:
