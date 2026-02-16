@@ -1,7 +1,9 @@
 # Virtual environment
 venv/
+.venv/
 cache
 .cache
+.cache-*
 # Compiled files
 __pycache__/
 *.pyc

@@ -2,7 +2,6 @@ import os
 import random
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from spotipy.cache_handler import CacheFileHandler
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,14 +10,7 @@ os.environ["SPOTIPY_CLIENT_ID"] = os.environ.get("SPOTIPY_CLIENT_ID")
 os.environ["SPOTIPY_CLIENT_SECRET"] = os.environ.get("SPOTIPY_CLIENT_SECRET")
 os.environ["SPOTIPY_REDIRECT_URI"] = os.environ.get("SPOTIPY_REDIRECT_URI")
 
-cache_path = os.environ.get("SPOTIPY_CACHE_PATH")
-if cache_path:
-    auth_manager = SpotifyOAuth(
-        scope="playlist-modify-private",
-        cache_handler=CacheFileHandler(cache_path=cache_path),
-    )
-else:
-    auth_manager = SpotifyOAuth(scope="playlist-modify-private")
+auth_manager = SpotifyOAuth(scope="playlist-modify-private")
 
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
