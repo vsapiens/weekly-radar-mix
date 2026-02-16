@@ -50,17 +50,26 @@ SPOTIPY_CLIENT_SECRET=your_client_secret
 SPOTIPY_REDIRECT_URI=http://localhost:8080
 ```
 
-6. Replace your_existing_playlist_id in the update_playlist.py script with the ID of the existing playlist you want to update with new songs.
+6. Copy `.env.example` to `.env` and fill in your credentials (see step 5). The script uses playlist ID in `weekly_mix_review.py`; change it if you use a different playlist.
 
 ## Running the script
 
-To run the script and update the playlist manually, execute the following command in your terminal or command prompt:
+To run the script and update the playlist manually:
 
 ```bash
-python update_playlist.py
+python weekly_mix_review.py
 ```
 
-The script will authenticate with the Spotify API, search for tracks from the specified genres, shuffle them, clear the existing playlist, and add the new tracks to it.
+To do a dry run (no playlist changes):
+
+```bash
+# Windows PowerShell
+$env:DRY_RUN = "1"; python weekly_mix_review.py
+# Linux/macOS
+DRY_RUN=1 python weekly_mix_review.py
+```
+
+The script authenticates with the Spotify API, searches for tracks from the configured genres, deduplicates and shuffles them, then replaces the playlist.
 
 ## Automating the process with GitHub Actions
 
