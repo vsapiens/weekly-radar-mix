@@ -1,30 +1,47 @@
 # GitHub Actions setup for weekly playlist updates
 
-The workflow in `.github/workflows/update-playlist.yml` runs every **Monday at 00:00 UTC** and can also be triggered manually from the Actions tab.
+The workflow runs every **Monday at 00:00 UTC** and can be triggered manually from the Actions tab.
 
-## Testing on GitHub
+## 1. Spotify Dashboard setup
 
-Before relying on the scheduled run, test the workflow manually:
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and open your app.
+2. In **Redirect URIs**, add exactly: `https://example.com/callback`
+3. Save.
 
-1. **Add all required secrets** (see below).
-2. Go to **Actions** → **Update weekly playlist** → **Run workflow**.
-3. Turn **Dry run** on (checkbox) so the job only logs what it would do and does not change the playlist.
-4. Click **Run workflow** and confirm the run succeeds and the log shows e.g. `[DRY RUN] Would update playlist with N tracks`.
-5. Run again with **Dry run** off to update the playlist for real (or leave it to the Monday schedule).
+## 2. One-time token setup
 
-**Note:** The script uses Spotify OAuth, which requires a browser to log in. GitHub Actions has no browser, so the workflow will not be able to complete authentication when run in CI. Use the workflow for local/manual runs only, or add a token-based auth strategy if you need unattended runs.
+The script needs a Spotify token to modify your playlist. Run this **once** locally to generate it:
 
-## Required repository secrets
+```bash
+pip install spotipy python-dotenv
+python setup_token.py
+```
 
-In your GitHub repo go to **Settings → Secrets and variables → Actions** and add:
+This will:
+- Open your browser to log in to Spotify.
+- Redirect to `https://example.com/callback?code=...` (the page won't load — that's expected).
+- Copy the **full URL** from the browser address bar and paste it into the terminal.
+- Print a JSON token to use as a GitHub Secret.
 
-| Secret | Description |
-|--------|-------------|
+## 3. Add GitHub Secrets
+
+In your repo go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | Value |
+|--------|-------|
 | `SPOTIPY_CLIENT_ID` | Your Spotify app Client ID |
 | `SPOTIPY_CLIENT_SECRET` | Your Spotify app Client Secret |
-| `SPOTIPY_REDIRECT_URI` | Redirect URI (e.g. `http://localhost:8080`) |
-| `SPOTIPY_PLAYLIST_ID` | Optional. Playlist ID or full Spotify playlist URI to update. If unset, script uses default. |
+| `SPOTIPY_REDIRECT_URI` | `https://example.com/callback` |
+| `SPOTIPY_PLAYLIST_ID` | Playlist ID (e.g. `417YNUWmPJcvGknVUQaW14`) |
+| `SPOTIFY_TOKEN_CACHE` | The JSON output from `setup_token.py` |
 
-## Manual run
+## 4. Test on GitHub
 
-Open your repo on GitHub → **Actions** → **Update weekly playlist** → **Run workflow**. Choose **Dry run** to test without changing the playlist; scheduled runs (Mondays) always update the playlist.
+1. Go to **Actions** → **Update weekly playlist** → **Run workflow**.
+2. Check **Dry run** to test without changing the playlist.
+3. Confirm the log shows `[DRY RUN] Would update playlist with N tracks`.
+4. Run again without **Dry run** to update the playlist for real.
+
+## Refreshing the token
+
+The token includes a refresh token that Spotify uses to get new access tokens automatically. If the workflow starts failing with auth errors, run `python setup_token.py` again locally and update the `SPOTIFY_TOKEN_CACHE` secret.

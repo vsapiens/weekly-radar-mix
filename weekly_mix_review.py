@@ -1,50 +1,65 @@
 import os
+import json
 import random
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+from spotipy.cache_handler import CacheFileHandler
 from dotenv import load_dotenv
 
 load_dotenv()
 
-os.environ["SPOTIPY_CLIENT_ID"] = os.environ.get("SPOTIPY_CLIENT_ID")
-os.environ["SPOTIPY_CLIENT_SECRET"] = os.environ.get("SPOTIPY_CLIENT_SECRET")
-os.environ["SPOTIPY_REDIRECT_URI"] = os.environ.get("SPOTIPY_REDIRECT_URI")
+SCOPE = "playlist-modify-private playlist-modify-public"
+CACHE_PATH = ".cache"
 
-auth_manager = SpotifyOAuth(scope="playlist-modify-private")
+# If a .cache file exists (e.g. restored from a secret in CI), use it
+# so the script can refresh the token without a browser.
+if os.path.exists(CACHE_PATH):
+    cache_handler = CacheFileHandler(cache_path=CACHE_PATH)
+    auth_manager = SpotifyOAuth(scope=SCOPE, cache_handler=cache_handler)
+else:
+    auth_manager = SpotifyOAuth(scope=SCOPE)
 
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
-user_id = sp.me()["id"]
-
-# Playlist ID or full URI from environment (e.g. SPOTIPY_PLAYLIST_ID or .env)
+# Playlist ID or full URI from environment
 _raw = os.environ.get("SPOTIPY_PLAYLIST_ID", "").strip() or "417YNUWmPJcvGknVUQaW14"
 if "open.spotify.com/playlist/" in _raw:
     playlist_id = _raw.split("playlist/")[-1].split("?")[0]
 else:
     playlist_id = _raw
-genres = ["latin urban", "urban", "trap", "reggaeton"]
+
+# Search terms to discover tracks
+search_queries = [
+    "reggaeton new",
+    "latin trap",
+    "reggaeton hit",
+    "perreo",
+    "latin urban",
+]
 
 track_ids = []
 
-# Search for tracks with the desired genres
-for genre in genres:
-    search_results = sp.search(q=f'genre:"{genre}"', type="track", limit=10)
-    genre_track_ids = [track["id"] for track in search_results["tracks"]["items"]]
-    track_ids.extend(genre_track_ids)
+# Use the Search API to find tracks by keyword
+for query in search_queries:
+    results = sp.search(q=query, type="track", limit=15)
+    found = [track["id"] for track in results["tracks"]["items"]]
+    track_ids.extend(found)
+    print(f"  Found {len(found)} tracks for: {query}")
 
 # Remove duplicates (same track can match multiple genres)
 track_ids = list(dict.fromkeys(track_ids))
 
-# Shuffle the tracks to create a more diverse playlist
+# Shuffle for a more diverse playlist
 random.shuffle(track_ids)
+
+print(f"Total unique tracks: {len(track_ids)}")
 
 dry_run = os.environ.get("DRY_RUN", "").lower() in ("1", "true", "yes")
 if dry_run:
     print(f"[DRY RUN] Would update playlist with {len(track_ids)} tracks (no changes made).")
+elif not track_ids:
+    print("No tracks found. Playlist was not changed.")
 else:
-    # Clear the existing playlist
     sp.playlist_replace_items(playlist_id, [])
-    # Add tracks to the existing playlist
     sp.playlist_add_items(playlist_id, track_ids)
     print(f"Updated the playlist with {len(track_ids)} tracks.")
-#
