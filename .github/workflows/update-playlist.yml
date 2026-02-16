@@ -35,7 +35,8 @@ jobs:
             echo "::error::SPOTIFY_TOKEN_CACHE secret is not set. Run 'python setup_token.py' locally and add the output to GitHub Secrets."
             exit 1
           fi
-          echo "$SPOTIFY_TOKEN_CACHE" > .cache
+          printf '%s' "$SPOTIFY_TOKEN_CACHE" > .cache
+          echo "Token cache restored ($(wc -c < .cache) bytes)"
 
       - name: Update playlist
         env:
