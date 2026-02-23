@@ -1,0 +1,6 @@
+# Developer / code-quality tools
+# Install with: pip install -r requirements-dev.txt
+# or:           make dev-install
+
+flake8>=7.0.0
+black>=24.0.0
