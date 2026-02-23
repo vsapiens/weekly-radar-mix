@@ -1,2 +1,7 @@
+# Production dependencies
+# Pin exact versions for reproducible runs.
+# To update: pip install --upgrade spotipy python-dotenv
+#            pip freeze | grep -E "^(spotipy|python-dotenv)" > requirements.txt
+
 spotipy==2.22.0
-python-dotenv==0.19.2
+python-dotenv==1.0.1

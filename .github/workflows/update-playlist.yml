@@ -2,12 +2,13 @@ name: Update weekly playlist
 
 on:
   schedule:
-    # Run every Monday at 00:00 UTC
+    # Runs every Monday at 00:00 UTC.
+    # Adjust the cron expression to change day/time (see https://crontab.guru).
     - cron: "0 0 * * 1"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Dry run (log only, do not change playlist)"
+        description: "Dry run — log track list without updating the playlist"
         required: false
         default: false
         type: boolean
@@ -15,14 +16,23 @@ on:
 jobs:
   update-playlist:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -32,7 +42,9 @@ jobs:
           SPOTIFY_TOKEN_CACHE: ${{ secrets.SPOTIFY_TOKEN_CACHE }}
         run: |
           if [ -z "$SPOTIFY_TOKEN_CACHE" ]; then
-            echo "::error::SPOTIFY_TOKEN_CACHE secret is not set. Run 'python setup_token.py' locally and add the output to GitHub Secrets."
+            echo "::error::SPOTIFY_TOKEN_CACHE secret is not set."
+            echo "::error::Run 'python setup_token.py' locally, then add the JSON output as a GitHub Secret named SPOTIFY_TOKEN_CACHE."
+            echo "::error::See github_actions_setup.md for full instructions."
             exit 1
           fi
           printf '%s' "$SPOTIFY_TOKEN_CACHE" > .cache
